@@ -14,12 +14,12 @@
 #
 class postfix::params {
 
-	### Application related parameters
+  ### Application related parameters
 
-	$package_name = $::operatingsystem ? {
-		default => 'postfix'
-	}
+  $package_name = $::operatingsystem ? {
+    default => 'postfix'
+  }
 
-	$enabled = true
+  $enabled = true
 
 }

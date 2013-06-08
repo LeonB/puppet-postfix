@@ -2,7 +2,7 @@
 # echo "The message" | mail -s "The subject" --append=FROM:sensible@domain.tld user@domain.tld
 
 class postfix(
-	$package_name = params_lookup('package_name')
+  $package_name = params_lookup('package_name')
 ) inherits postfix::params {
 
 }

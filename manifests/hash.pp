@@ -1,18 +1,18 @@
-#== Definition: postfix::hash
+# == Definition: postfix::hash
 #
-#Creates postfix hashed "map" files. It will create "${name}", and then build
-#"${name}.db" using the "postmap" command. The map file can then be referred to
-#using postfix::config.
+# Creates postfix hashed "map" files. It will create "${name}", and then build
+# "${name}.db" using the "postmap" command. The map file can then be referred to
+# using postfix::config.
 #
-#Parameters:
-#- *name*: the name of the map file.
-#- *ensure*: present/absent, defaults to present.
-#- *source*: file source.
+# Parameters:
+# - *name*: the name of the map file.
+# - *ensure*: present/absent, defaults to present.
+# - *source*: file source.
 #
-#Requires:
-#- Class["postfix"]
+# Requires:
+# - Class["postfix"]
 #
-#Example usage:
+# Example usage:
 #
 #  node "toto.example.com" {
 #
@@ -28,65 +28,65 @@
 #
 define postfix::hash ($ensure='present', $source = false, $content = false) {
 
-	# selinux labels differ from one distribution to another
-  	case $::operatingsystem {
+  # selinux labels differ from one distribution to another
+    case $::operatingsystem {
 
-    	RedHat, CentOS: {
-      		case $::lsbmajdistrelease {
-	        	'4':     { $postfix_seltype = 'etc_t' }
-	        	'5','6': { $postfix_seltype = 'postfix_etc_t' }
-	        	default: { $postfix_seltype = undef }
-      		}
-    	}
+      RedHat, CentOS: {
+          case $::lsbmajdistrelease {
+            '4':     { $postfix_seltype = 'etc_t' }
+            '5','6': { $postfix_seltype = 'postfix_etc_t' }
+            default: { $postfix_seltype = undef }
+          }
+      }
 
-	    default: {
-	      	$postfix_seltype = undef
-	    }
-	}
+      default: {
+          $postfix_seltype = undef
+      }
+  }
 
-	if $source {
-		file { $name:
-			ensure  => $ensure,
-			mode    => '0600',
-			owner   => root,
-			group   => root,
-			source  => $source,
-			seltype => $postfix_seltype,
-			require => Class['postfix::package'],
-		}
-	} elsif $content {
-		file { $name:
-			ensure  => $ensure,
-			mode    => '0600',
-			owner   => root,
-			group   => root,
-			content => $content,
-			seltype => $postfix_seltype,
-			require => Class['postfix::package'],
-		}
-	} else {
-		file { $name:
-			ensure  => $ensure,
-			mode    => '0600',
-			owner   => root,
-			group   => root,
-			seltype => $postfix_seltype,
-			require => Class['postfix::package'],
-		}
-	}
+  if $source {
+    file { $name:
+      ensure  => $ensure,
+      mode    => '0600',
+      owner   => root,
+      group   => root,
+      source  => $source,
+      seltype => $postfix_seltype,
+      require => Class['postfix::package'],
+    }
+  } elsif $content {
+    file { $name:
+      ensure  => $ensure,
+      mode    => '0600',
+      owner   => root,
+      group   => root,
+      content => $content,
+      seltype => $postfix_seltype,
+      require => Class['postfix::package'],
+    }
+  } else {
+    file { $name:
+      ensure  => $ensure,
+      mode    => '0600',
+      owner   => root,
+      group   => root,
+      seltype => $postfix_seltype,
+      require => Class['postfix::package'],
+    }
+  }
 
-	file { "${name}.db":
-		ensure  => $ensure,
-		mode    => '0600',
-		require => [File[$name], Exec["generate ${name}.db"]],
-		seltype => $postfix_seltype,
-	}
+  file { "${name}.db":
+    ensure  => $ensure,
+    mode    => '0600',
+    require => [File[$name], Exec["generate ${name}.db"]],
+    seltype => $postfix_seltype,
+  }
 
-	exec { "generate ${name}.db":
-		command     => "/usr/sbin/postmap ${name}",
-		#creates    => "${name}.db", # this prevents postmap from being run !
-		subscribe   => File[$name],
-		refreshonly => true,
-		require     => Class['postfix::package'],
-	}
+  exec { "generate ${name}.db":
+    command     => "/usr/sbin/postmap ${name}",
+    # creates    => "${name}.db", # this prevents postmap from being run !
+    subscribe   => File[$name],
+    refreshonly => true,
+    require     => Class['postfix::package'],
+  }
 }
